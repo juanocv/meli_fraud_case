@@ -1,0 +1,15 @@
+# Ambiente
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Dados (bruto e intermediários não versionados)
+dados.csv
+data/
+
+# Artefatos de modelo (regeráveis pelos notebooks)
+models/*.joblib
+
+# Saídas temporárias de bibliotecas
+catboost_info/
