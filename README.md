@@ -77,6 +77,8 @@ dentro de treino + validação.
 
 Requer Python 3.13. Coloque o `dados.csv` na raiz do repositório.
 
+### Windows
+
 ```bash
 python -m venv .venv
 ```
@@ -85,11 +87,44 @@ python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
 ```
 
+### Linux / macOS
+
+O ambiente virtual guarda os executáveis em `bin/` em vez de `Scripts/`. Se a distribuição não
+tiver o Python 3.13 (o Ubuntu 22.04, por exemplo, traz o 3.10), a forma mais simples de obtê-lo sem
+privilégios de administrador é pelo [uv](https://docs.astral.sh/uv/):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+uv python install 3.13 && uv venv --python 3.13 .venv
+```
+
+```bash
+uv pip install --python .venv/bin/python -r requirements.txt
+```
+
+Com um Python 3.13 já instalado, o caminho sem o uv é o mesmo do Windows, trocando `Scripts` por
+`bin`:
+
+```bash
+python3.13 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt
+```
+
+### Execução
+
 Os notebooks devem ser executados **em ordem** (cada um consome saídas do anterior). Para executar
-todos de uma vez:
+todos de uma vez (Windows):
 
 ```bash
 cd notebooks && for nb in 0*.ipynb; do ../.venv/Scripts/python -m jupyter nbconvert --to notebook --execute --inplace "$nb"; done
+```
+
+Em Linux / macOS:
+
+```bash
+cd notebooks && for nb in 0*.ipynb; do ../.venv/bin/python -m jupyter nbconvert --to notebook --execute --inplace "$nb"; done
 ```
 
 Tempo total aproximado: 10 a 15 minutos em um notebook comum (o tuning do nb 06 leva ~3 minutos).
