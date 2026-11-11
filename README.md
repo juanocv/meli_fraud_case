@@ -1,4 +1,4 @@
-# Prevenção a Fraudes: novo modelo de risco de pagamentos (FREEDOM)
+# Meli: Prevenção a Fraudes - Case
 
 Desenvolvimento de um novo modelo de fraude para pagamentos de e-commerce, avaliado contra o score em
 produção, com definição de política de decisão orientada a lucro e um desenho de produtização.
@@ -27,9 +27,8 @@ Avaliação no **teste fora do tempo** (11/04–21/04/2020), período nunca usad
 
 O projeto segue o **CRISP-DM** adaptado a fraude, com dois princípios transversais:
 
-1. **Tudo é validado fora do tempo** (*out-of-time*). Fraude é adversarial e não estacionária, e
-   validação aleatória superestima o desempenho.
-2. **A decisão final é medida em R$**, e não só em métricas estatísticas.
+1. **Tudo é validado fora do tempo** (*out-of-time*);
+2. **A decisão final é medida em R$**.
 
 | # | Notebook | Etapa CRISP-DM | Pergunta |
 |---|---|---|---|
@@ -127,8 +126,9 @@ Em Linux / macOS:
 cd notebooks && for nb in 0*.ipynb; do ../.venv/bin/python -m jupyter nbconvert --to notebook --execute --inplace "$nb"; done
 ```
 
-Tempo total aproximado: 10 a 15 minutos em um notebook comum (o tuning do nb 06 leva ~3 minutos).
+Tempo total aproximado: 10 a 15 minutos em um notebook comum.
 
+<!-- 
 ## Limitações e próximos passos
 
 - **Variáveis anonimizadas:** a interpretação de negócio de `a`–`p` é inferida pelo comportamento.
