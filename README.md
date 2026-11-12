@@ -15,7 +15,7 @@ Avaliação no **teste fora do tempo** (11/04–21/04/2020), período nunca usad
 | PR AUC | 0,227 | **0,368** (+62%) |
 | Recall em R$ @ 5% de bons bloqueados | 44% | **63%** |
 | Lucro no teste (corte escolhido no passado) | R$ 79,1 mil | **R$ 95,8 mil (+21%)** |
-| Latência por transação (API local, p50) | — | **~0,9 ms no modelo, ~2–3 ms na chamada HTTP** |
+| Latência por transação (API local, p50) | — | **~1 ms no modelo, ~2–3 ms na chamada HTTP** |
 
 - **Modelo:** LightGBM (25 features, tunado com Optuna em CV temporal) + calibração de Platt.
 - **Corte ótimo do score atual (pergunta 6):** aprovar score ≤ 75 e rejeitar ≥ 76. O lucro passa de
@@ -115,13 +115,13 @@ python3.13 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt
 ### Execução
 
 Os notebooks devem ser executados **em ordem** (cada um consome saídas do anterior). Para executar
-todos de uma vez (Windows):
+todos de uma vez no Windows (PowerShell):
 
-```bash
-cd notebooks && for nb in 0*.ipynb; do ../.venv/Scripts/python -m jupyter nbconvert --to notebook --execute --inplace "$nb"; done
+```powershell
+cd notebooks; Get-ChildItem 0*.ipynb | ForEach-Object { ..\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace $_.Name }
 ```
 
-Em Linux / macOS:
+Em Linux / macOS (ou no Git Bash do Windows, trocando `bin` por `Scripts`):
 
 ```bash
 cd notebooks && for nb in 0*.ipynb; do ../.venv/bin/python -m jupyter nbconvert --to notebook --execute --inplace "$nb"; done
@@ -139,15 +139,25 @@ partir da raiz do repositório (em Linux / macOS, troque `Scripts` por `bin`):
 ```
 
 A documentação interativa fica em `http://127.0.0.1:8000/docs`. Para avaliar uma transação pelo
-terminal:
+terminal (Linux / macOS / Git Bash):
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/v1/fraude/avaliar?explicar=true" -H "Content-Type: application/json" -d '{"a": 3, "b": 0.73, "c": 28702.1, "d": 50, "e": 0.57, "f": 19, "g": "BR", "h": 10, "i": "Samsung Galaxy A10 32 Gb", "j": "cat_43b9c10", "l": 1400, "m": 1399, "n": 1, "o": "N", "p": "N", "fecha": "2020-04-21T02:51:11", "monto": 899.0}'
 ```
 
+No PowerShell do Windows, `curl` é um apelido de outro comando; use `Invoke-RestMethod`:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/v1/fraude/avaliar?explicar=true" -ContentType "application/json" -Body '{"a": 3, "b": 0.73, "c": 28702.1, "d": 50, "e": 0.57, "f": 19, "g": "BR", "h": 10, "i": "Samsung Galaxy A10 32 Gb", "j": "cat_43b9c10", "l": 1400, "m": 1399, "n": 1, "o": "N", "p": "N", "fecha": "2020-04-21T02:51:11", "monto": 899.0}' | ConvertTo-Json -Depth 4
+```
+
+O campo `fecha` deve vir com data e hora, no horário local e sem fuso (ex.: `2020-04-21T02:51:11`),
+como na base de treino. Datas com fuso ou sem hora são recusadas com HTTP 422, porque mudariam as
+features de horário sem aviso.
+
 O notebook 09 sobe a própria instância da API (porta 8001) e a encerra no fim.
 
-<!-- 
+<!--
 ## Limitações e próximos passos
 
 - **Variáveis anonimizadas:** a interpretação de negócio de `a`–`p` é inferida pelo comportamento.
@@ -159,3 +169,4 @@ O notebook 09 sobe a própria instância da API (porta 8001) e a encerra no fim.
   rótulos antes de calibrar a política em produção. O período tem regimes atípicos (nb 01).
 - **Score atual traz informação complementar** (o *stacking* melhora o topo do ranking, nb 07):
   investigar quais insumos ele usa e incorporá-los como features próprias.
+-->

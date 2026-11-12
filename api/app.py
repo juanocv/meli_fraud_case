@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 import time
 from contextlib import asynccontextmanager
@@ -29,6 +30,7 @@ from fraude.inferencia import ModeloFraude  # noqa: E402
 
 CAMINHO_MODELO = Path(os.getenv("MODELO_FRAUDE_PATH", str(cfg.ARQUIVO_MODELO)))
 TAMANHO_MAX_LOTE = 1000
+_RE_HORA = re.compile(r"\d[T ]\d{2}:\d{2}")  # data seguida de hora (HH:MM)
 
 # Log de auditoria: uma linha JSON por decisão (sem dados pessoais do payload).
 # Em produção, o stdout do container vai para o CloudWatch e, via Firehose, para o S3.
@@ -73,7 +75,8 @@ class Transacao(BaseModel):
     n: int | None = None
     o: Literal["Y", "N"] | None = None
     p: Literal["Y", "N"] | None = None
-    fecha: datetime = Field(..., description="Data e hora da transação (horário local, sem fuso)")
+    fecha: datetime = Field(..., description="Data e hora da transação no horário local, sem fuso "
+                                             "(ex.: 2020-04-21T02:51:11)")
     monto: float = Field(..., gt=0, description="Valor do pagamento")
 
     @field_validator("g", "i", "j", "o", "p", mode="before")
@@ -82,6 +85,24 @@ class Transacao(BaseModel):
         """Texto vazio ou 'null' vira nulo, que é como a ausência aparece no treino."""
         if isinstance(v, str) and v.strip().lower() in {"", "null", "none", "nan"}:
             return None
+        return v
+
+    @field_validator("fecha", mode="before")
+    @classmethod
+    def fecha_com_hora(cls, v):
+        """Exige a hora: só a data viraria meia-noite e ligaria `madrugada` sem aviso."""
+        if isinstance(v, datetime):
+            return v
+        if not isinstance(v, str) or not _RE_HORA.search(v):
+            raise ValueError("fecha deve trazer data e hora (ex.: 2020-04-21T02:51:11)")
+        return v
+
+    @field_validator("fecha")
+    @classmethod
+    def fecha_sem_fuso(cls, v: datetime):
+        """Recusa fuso: as features de horário usam a hora local, como no treino."""
+        if v.tzinfo is not None:
+            raise ValueError("fecha deve vir no horário local, sem fuso (ex.: 2020-04-21T02:51:11)")
         return v
 
 

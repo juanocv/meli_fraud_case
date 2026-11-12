@@ -12,7 +12,6 @@ DIR_PROCESSADO = RAIZ / "data" / "processed"
 DIR_MODELOS = RAIZ / "models"
 
 ARQUIVO_BASE = DIR_PROCESSADO / "base.parquet"          # base limpa + coluna 'particao'
-ARQUIVO_FEATURES = DIR_PROCESSADO / "features.parquet"  # matriz de features (saída do nb 04)
 ARQUIVO_MODELO = DIR_MODELOS / "modelo_fraude.joblib"   # pipeline final (nb 06)
 ARQUIVO_PRED_TESTE = DIR_PROCESSADO / "predicoes_teste.parquet"
 ARQUIVO_PRED_OOF = DIR_PROCESSADO / "predicoes_oof_dev.parquet"

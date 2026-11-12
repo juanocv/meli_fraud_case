@@ -39,7 +39,7 @@ class CalibradorPlatt:
 class ModeloFraude:
     construtor: ConstrutorFeatures
     modelo: object                      # LGBMClassifier já treinado
-    calibrador: object | None = None    # IsotonicRegression (score bruto -> probabilidade)
+    calibrador: object | None = None    # CalibradorPlatt (score bruto -> probabilidade)
     limiar: float | None = None         # rejeita se probabilidade >= limiar
     metadados: dict = field(default_factory=dict)
 
