@@ -15,7 +15,7 @@ Avaliação no **teste fora do tempo** (11/04–21/04/2020), período nunca usad
 | PR AUC | 0,227 | **0,368** (+62%) |
 | Recall em R$ @ 5% de bons bloqueados | 44% | **63%** |
 | Lucro no teste (corte escolhido no passado) | R$ 79,1 mil | **R$ 95,8 mil (+21%)** |
-| Latência por transação | — | **~0,8 ms** |
+| Latência por transação (API local, p50) | — | **~0,9 ms no modelo, ~2–3 ms na chamada HTTP** |
 
 - **Modelo:** LightGBM (25 features, tunado com Optuna em CV temporal) + calibração de Platt.
 - **Corte ótimo do score atual (pergunta 6):** aprovar score ≤ 75 e rejeitar ≥ 76. O lucro passa de
@@ -40,7 +40,7 @@ O projeto segue o **CRISP-DM** adaptado a fraude, com dois princípios transvers
 | 06 | [Modelo final](notebooks/06_modelo_final.ipynb) | Modelagem | Tuning (Optuna), SHAP, calibração, artefato |
 | 07 | [Avaliação fora do tempo](notebooks/07_avaliacao_oot.ipynb) | Avaliação | Novo modelo × score atual no teste |
 | 08 | [Decisão de negócio](notebooks/08_decisao_negocio.ipynb) | Avaliação | Corte ótimo (lucro) e custo assimétrico 10:1 |
-| 09 | [Latência e produção](notebooks/09_latencia_producao.ipynb) | Implantação | Paridade lote × online, latência, trade-offs |
+| 09 | [API local e caminho para produção](notebooks/09_api_producao.ipynb) | Implantação | API FastAPI: paridade com o laboratório, latência, vazão e contrato via HTTP; arquitetura AWS |
 
 ### Particionamento
 
@@ -58,6 +58,7 @@ dentro de treino + validação.
 ```
 ├── dados.csv                  # base recebida do time de Analytics (não versionada)
 ├── notebooks/                 # 01 → 09, sequenciais e executados
+├── api/                       # serviço FastAPI (app.py) usado no nb 09
 ├── src/fraude/                # código compartilhado entre treino, avaliação e inferência
 │   ├── config.py              # caminhos, recortes temporais, premissas de negócio
 │   ├── dados.py               # leitura, particionamento, folds temporais
@@ -127,6 +128,24 @@ cd notebooks && for nb in 0*.ipynb; do ../.venv/bin/python -m jupyter nbconvert 
 ```
 
 Tempo total aproximado: 10 a 15 minutos em um notebook comum.
+
+### API local
+
+Depois dos notebooks 06 e 08, que geram o artefato do modelo e o limiar de decisão, a API sobe a
+partir da raiz do repositório (em Linux / macOS, troque `Scripts` por `bin`):
+
+```bash
+.venv/Scripts/python -m uvicorn api.app:app --port 8000 --no-access-log
+```
+
+A documentação interativa fica em `http://127.0.0.1:8000/docs`. Para avaliar uma transação pelo
+terminal:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/v1/fraude/avaliar?explicar=true" -H "Content-Type: application/json" -d '{"a": 3, "b": 0.73, "c": 28702.1, "d": 50, "e": 0.57, "f": 19, "g": "BR", "h": 10, "i": "Samsung Galaxy A10 32 Gb", "j": "cat_43b9c10", "l": 1400, "m": 1399, "n": 1, "o": "N", "p": "N", "fecha": "2020-04-21T02:51:11", "monto": 899.0}'
+```
+
+O notebook 09 sobe a própria instância da API (porta 8001) e a encerra no fim.
 
 <!-- 
 ## Limitações e próximos passos

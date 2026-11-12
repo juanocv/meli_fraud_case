@@ -80,16 +80,32 @@ class ModeloFraude:
             v.append(c.modelo_texto_.predict([normalizar_texto(t.get("i") or "")])[0])
         return np.asarray(v, dtype=float).reshape(1, -1)
 
-    def pontuar(self, t: dict) -> dict:
-        """Resposta da API para uma transação."""
+    def pontuar(self, t: dict, explicar: bool = False, top: int = 3) -> dict:
+        """Resposta da API para uma transação (com os principais motivos, se `explicar`)."""
+        v = self.vetor_features(t)
         # num_threads=1: para uma única linha, paralelizar só adiciona overhead
-        s = self.modelo.booster_.predict(self.vetor_features(t), num_threads=1)[0]
+        s = self.modelo.booster_.predict(v, num_threads=1)[0]
         p = float(self.calibrador.predict([s])[0]) if self.calibrador is not None else float(s)
-        return {
+        resposta = {
             "probabilidade_fraude": round(p, 6),
             "decisao": "REJEITAR" if p >= self.limiar else "APROVAR",
             "versao_modelo": self.metadados.get("versao"),
         }
+        if explicar:
+            resposta["motivos"] = self.motivos(v, top)
+        return resposta
+
+    def motivos(self, v: np.ndarray, top: int = 3) -> list[dict]:
+        """Features que mais empurraram o risco para cima (contribuições SHAP nativas do LightGBM).
+
+        As contribuições estão em log-odds do modelo bruto (antes da calibração).
+        """
+        contrib = self.modelo.booster_.predict(v, pred_contrib=True, num_threads=1)[0][:-1]  # último = viés
+        nomes = self.construtor.feature_names_
+        ordem = [i for i in np.argsort(-contrib)[:top] if contrib[i] > 0]
+        return [{"feature": nomes[i],
+                 "valor": None if np.isnan(v[0, i]) else round(float(v[0, i]), 6),
+                 "contribuicao": round(float(contrib[i]), 4)} for i in ordem]
 
     # ------------------------------------------------------- persistência
     def salvar(self, caminho):
