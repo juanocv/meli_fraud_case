@@ -5,7 +5,7 @@ produção, com definição de política de decisão orientada a lucro e um dese
 
 **Respostas às perguntas do case:** [RESPOSTAS.md](RESPOSTAS.md)
 
-## Resultado em uma tabela
+## Resultado principal
 
 Avaliação no **teste fora do tempo** (11/04–21/04/2020), período nunca usado em treino ou ajuste:
 
