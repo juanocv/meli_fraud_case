@@ -20,7 +20,7 @@ Avaliação no **teste fora do tempo** (11/04–21/04/2020), período nunca usad
 - **Modelo:** LightGBM (25 features, tunado com Optuna em CV temporal) + calibração de Platt.
 - **Corte ótimo do score atual (pergunta 6):** aprovar score ≤ 75 e rejeitar ≥ 76. O lucro passa de
   R$ 51 mil para R$ 265 mil na base (5,2x).
-- **Principal achado sobre o score atual:** uma "zona cega" (score 0–25) com ~21% das fraudes, em que o
+- **Principal achado sobre o score atual:** uma "faixa ignorada" (score 0–25) com ~21% das fraudes, em que o
   score é praticamente aleatório. O novo modelo recupera parte delas.
 
 ## Metodologia
